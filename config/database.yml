@@ -25,7 +25,3 @@ production:
   database: activeadmin_depot_production
   pool: 5
   timeout: 5000
-  username: szwgrifbuyiadx
-  password: LLKuM1U4i8cHFFJKMUl_23bTsY
-  port: 5432
-  host: ec2-54-228-195-63.eu-west-1.compute.amazonaws.com
