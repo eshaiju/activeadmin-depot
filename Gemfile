@@ -45,6 +45,11 @@ group :production do
 
   gem 'rack-throttle'
   gem 'rack-cache'
+
+  gem 'memcachier'
+  gem 'dalli'
+  # Fast IO for memcache
+  gem 'kgio'
 end
 
 group :development, :test do

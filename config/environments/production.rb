@@ -14,10 +14,23 @@ Rails.application.configure do
   config.consider_all_requests_local       = false
   config.action_controller.perform_caching = true
 
+
+  # Set static assets cache header. rack-cache will cache those.
+  config.static_cache_control = "public, max-age=31536000"
+
+  config.cache_store = :dalli_store
+
+  client = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"],
+                             :value_max_bytes => 10485760,
+                             :expires_in => 86400) # 1 day
+
   # Enable Rack::Cache to put a simple HTTP cache in front of your application
   # Add `rack-cache` to your Gemfile before enabling this.
   # For large-scale production use, consider using a caching reverse proxy like nginx, varnish or squid.
-  config.action_dispatch.rack_cache = true
+  config.action_dispatch.rack_cache = {
+    :metastore    => client,
+    :entitystore  => client
+  }
 
   # Disable Rails's static asset server (Apache or nginx will already do this).
   config.serve_static_assets = true
@@ -25,6 +38,9 @@ Rails.application.configure do
   # Compress JavaScripts and CSS.
   config.assets.js_compressor = :uglifier
   # config.assets.css_compressor = :sass
+
+  config.middleware.use Rack::Throttle::Daily,  cache: client, max: 1000  # requests
+  config.middleware.use Rack::Throttle::Minute, cache: client, max: 60    # requests
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = false
@@ -75,7 +91,4 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-
-  config.middleware.use Rack::Throttle::Daily,    :max => 1000  # requests
-  config.middleware.use Rack::Throttle::Minute,   :max => 60    # requests
 end
